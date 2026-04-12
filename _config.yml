@@ -1,0 +1,10 @@
+# Prevent Jekyll from processing heavy folders
+exclude:
+  - node_modules
+  - .github
+  - .sass-cache
+  - Gemfile
+  - Gemfile.lock
+  - api-busticket-1/node_modules # Specifically target your API subfolder
+  - package.json
+  - package-lock.json
