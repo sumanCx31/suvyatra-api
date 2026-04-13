@@ -12,4 +12,16 @@ const TripValidateDTO = joi.object({
     status: joi.string().valid("scheduled","cancelled","completed").default("scheduled")
 });
 
-module.exports = { TripValidateDTO };
+const TripUpdateValidateDTO = joi.object({
+    bus: joi.string().optional(),
+    from: joi.string().required(),
+    to: joi.string().required(),
+    departureTime: joi.string(),
+    arrivalTime: joi.string(),
+    date: joi.date().required(),
+    price: joi.number().required(),
+    seats:joi.array(),
+    status: joi.string().valid("scheduled","cancelled","completed").default("scheduled")
+});
+
+module.exports = { TripValidateDTO ,TripUpdateValidateDTO};
