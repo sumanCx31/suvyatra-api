@@ -4,27 +4,19 @@ const app = require("./src/config/express.config");
 
 const server = http.createServer(app);
 
-const ALLOWED_ORIGINS = [
-    "https://nextjs-suvyatra-fe.vercel.app",
-    "https://frontendvite-suvyatra4.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:5173"
-];
-
 const io = new Server(server, {
     cors: {
-        origin: ALLOWED_ORIGINS,
-        methods: ["GET", "POST"],
-        credentials: true
+        origin: "*", 
+        methods: ["GET", "POST"]
     }
 });
 
-const PORT = process.env.PORT || 9005;
+const PORT = 9005;
+const HOST = "127.0.0.1";
 
-io.on("connection", (socket) => {
-    socket.on("disconnect", () => {});
-});
-
-server.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
+server.listen(PORT, "0.0.0.0", (err) => {
+    if(!err) {
+        console.log("Server is running on port:", PORT);
+        console.log("Press CTRL+C to discontinue server...");
+    }
 });
