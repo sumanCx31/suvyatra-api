@@ -11,9 +11,9 @@ const RegisterDTO = Joi.object({
     confirmPassword: Joi.string().equal(Joi.ref("password")).required().messages({"any.only":"Password and ConfirmPassword must be same"}),
     phone: Joi.string().max(21).allow(null,"").optional().default(null),
     address: Joi.string(),
-    role: Joi.string().allow('passenger','busoperator','admin').default("passenger"),
+    role: Joi.string().allow('passenger','driver','admin').default("passenger"),
     gender: Joi.string().allow('male','female','other').optional().default(null),
-    image: Joi.string().allow(null,"").optional().default(null)
+    image: Joi.any().optional()
 })
 const loginDTO = Joi.object({
     email: EmailDTO,
