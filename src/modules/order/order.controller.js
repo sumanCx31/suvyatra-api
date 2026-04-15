@@ -220,8 +220,8 @@ class OrderController {
             Authorization: `Key ${PaymentConfig.khalti.secretKey}`,
           },
           body: JSON.stringify({
-            return_url: `${AppConfig.frontendUrl}/payment-success`, // frontend success page
-            website_url: AppConfig.frontendUrl,
+            return_url: `${AppConfig.nextjsFrontendUrl}/payment-success`, // frontend success page
+            website_url: AppConfig.nextjsFrontendUrl,
             amount: order.totalAmount * 100, // Khalti expects paisa
             purchase_order_id: order._id.toString(),
             purchase_order_name: "Bus Ticket Booking",
@@ -231,16 +231,15 @@ class OrderController {
 
       const data = await response.json();
 
-      // 3. Save pidx in order document
       if (data.pidx) {
         order.pidx = data.pidx;
         order.paymentMethod = "khalti";
-        await order.save(); // ✅ saves pidx in DB
+        await order.save();
       } else {
         return res.status(500).json({ message: "Payment initiation failed" });
       }
 
-      // 4. Return the payment URL to frontend
+     
       res.json({
         status: "PAYMENT_INITIATE",
         message: "Payment initiated",
@@ -263,9 +262,7 @@ class OrderController {
       const limit = parseInt(req.query.limit) || 10;
       const skip = (page - 1) * limit;
 
-      // =========================
-      // 2. Get Driver Buses
-      // =========================
+    
       const driverBuses = await BusModel.find({ driverId }).select("_id");
 
       if (!driverBuses.length) {
@@ -381,7 +378,6 @@ class OrderController {
     }
   };
 
-  //VERIFY PAYMENT (FINAL SAFE VERSION)
   verifyPayment = async (req, res) => {
     try {
       const { pidx } = req.body;
@@ -390,7 +386,7 @@ class OrderController {
       //   return res.status(400).json({ message: "pidx is required" });
       // }
 
-      // 1️⃣ Find the order by pidx
+   
       const order = await OrderModel.findOne({ pidx });
 
       if (!order) {
@@ -399,7 +395,7 @@ class OrderController {
           .json({ message: "Order not found for this payment" });
       }
 
-      // 2️⃣ Prevent duplicate verification
+     
       if (order.paymentStatus === "paid") {
         return res.status(200).json({
           message: "Payment already verified",
@@ -407,7 +403,6 @@ class OrderController {
         });
       }
 
-      // 3️⃣ Call Khalti lookup API
       const { data: khaltiData } = await axios.post(
         `${PaymentConfig.khalti.url}epayment/lookup/`,
         { pidx },
@@ -421,7 +416,7 @@ class OrderController {
 
       console.log("Khalti Response:", khaltiData);
 
-      // 4️⃣ Validate Khalti response
+     
       if (!khaltiData || khaltiData.status !== "Completed") {
         order.paymentStatus = "failed";
         await order.save();
@@ -439,12 +434,12 @@ class OrderController {
           .json({ message: "Payment amount mismatch", data: khaltiData });
       }
 
-      // 5️⃣ Update order as paid
+      
       order.paymentStatus = "paid";
       order.transactionId = khaltiData.transaction_id;
       await order.save();
 
-      // 6️⃣ Update trip seats
+  
       await TripModel.updateOne(
         { _id: order.trip },
         {

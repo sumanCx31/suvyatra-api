@@ -12,7 +12,7 @@ OrderRouter.get("/tickets-sold", orderCltr.totalTicketsSold);
 
 OrderRouter.get("/",auth(USER_ROLES.ADMIN), orderCltr.getAllOrders);
 OrderRouter.get('/:id', orderCltr.getSingleOrder);
-OrderRouter.get("/my-orders/:driverId",auth(USER_ROLES.DRIVER),orderCltr.getAllOrdersByDriverId);
+OrderRouter.get("/my-orders/:driverId",orderCltr.getAllOrdersByDriverId);
 OrderRouter.post("/payment/verify", orderCltr.verifyPayment);
 OrderRouter.post("/payment/:orderId",orderCltr.initiatePayment);
 

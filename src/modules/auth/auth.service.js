@@ -140,7 +140,7 @@ class AuthService {
         to: userData.email,
         sub: "Password reset request",
         msg: `Please click the link below to reset your password <br>
-        <a href="${AppConfig.frontendUrl}/reset-password?token=${userData.forgetPasswordToken}">${AppConfig.frontendUrl}/reset-password?token=${userData.forgetPasswordToken}</a>
+        <a href="${AppConfig.nextjsFrontendUrl}/reset-password?token=${userData.forgetPasswordToken}">${AppConfig.frontendUrl}/reset-password?token=${userData.forgetPasswordToken}</a>
        The link will expire in 3 hour. If you did not request for password reset, please ignore this email.`,
       })
     } catch (exception) {
