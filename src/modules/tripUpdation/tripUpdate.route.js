@@ -15,7 +15,7 @@ TripUpdateRouter.patch("/seat-reserve/:id", TripCltr.seatReservation);
 TripUpdateRouter.delete("/:id", TripCltr.deleteById);
 TripUpdateRouter.put(
   "/:id",
-  // auth(USER_ROLES.DRIVER || USER_ROLES.ADMIN),
+ 
   bodyValidator(TripUpdateValidateDTO),
   TripCltr.updateById,
 );
