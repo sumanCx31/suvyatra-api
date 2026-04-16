@@ -15,6 +15,7 @@ const SMTPConfig = {
   password:process.env.SMTP_PASSWORD,
   port: process.env.SMTP_PORT,
   from: process.env.SMTP_FROM,
+  resendApiKey:process.env.RESEND_API_KEY
 };
 
 

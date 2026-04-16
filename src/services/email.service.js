@@ -1,64 +1,62 @@
+const { Resend } = require("resend");
 const { SMTPConfig } = require("../config/config");
-const nodemailer = require("nodemailer");
 
 class EmailService {
-  #transport;
+  #resend;
 
   constructor() {
     try {
-      const config = {
-        host: SMTPConfig.host,
-        port: SMTPConfig.port,
-        auth: {
-          user: SMTPConfig.user,
-          pass: SMTPConfig.password,
-        },
-      };
-      if (SMTPConfig.provider === "gmail") {
-        config.service = SMTPConfig.provider;
+      const apiKey = process.env.RESEND_API_KEY || SMTPConfig.resendApiKey ;
+
+      if (!apiKey || apiKey === "undefined") {
+        console.error("CRITICAL: Resend API Key is missing!");
       }
-      this.#transport = nodemailer.createTransport(config);
-      console.log("SMTP Server connected...");
+
+      this.#resend = new Resend(apiKey);
+      console.log("Resend Email Service initialized...");
     } catch (exception) {
-      // console.log(exception);
+      console.error("Initialization Error:", exception);
       throw {
-        message: "SMTP Server connection failed",
-        status: "SMTP_CONNECTION_ERROR",
+        message: "Resend initialization failed",
+        status: "RESEND_INIT_ERROR",
       };
     }
   }
+
   sendEmail = async ({
     to,
     sub,
     msg,
     cc = null,
     bcc = null,
-    attachements = null,
+    attachments = null,
   }) => {
     try {
-      let msgBody = {
-        to: to,
-        from: SMTPConfig.from,
+      const payload = {
+        from: "onboarding@resend.dev", 
+        to:"sumansah029@gmail.com",
         subject: sub,
         html: msg,
       };
-      if (cc) {
-        msgBody["cc"] = cc;
-      }
-      if (bcc) {
-        msgBody["bcc"] = bcc;
-      }
-      if (attachements) {
-        msgBody["attachements"] = attachements;
-      }
+
+      if (cc) payload.cc = cc;
+      if (bcc) payload.bcc = bcc;
       
-     let response = await this.#transport.sendMail(msgBody);
-     
-     return response;
+      if (attachments) payload.attachments = attachments;
+
+      const { data, error } = await this.#resend.emails.send(payload);
+
+      if (error) {
+        console.error("Resend API returned an error:", error);
+        throw error;
+      }
+
+      return data;
     } catch (exception) {
+      console.error("Email Service Error Details:", exception);
       throw {
-        message: "Email sending failed...",
-        status: "EMAIL_SENDING_FAILED",
+        message: exception.message || "Email sending failed",
+        status: "EMAIL_SENDING_ERROR",
       };
     }
   };
