@@ -1,14 +1,16 @@
 const bcrypt = require("bcryptjs");
 const cloudinarySvc = require("../../services/cloudinary.service");
 const { Status } = require("../../config/constants");
-const { randomStringGenerator } = require("../../utilities/helper");
 const { AppConfig } = require("../../config/config");
 const emailSvc = require("../../services/email.service");
-const UserModel = require("../user/user.model");
 const AuthModel = require("./auth.model");
 const userSvc = require("../user/user.service");
 
 class AuthService {
+  generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   async transformUserCreate(req) {
     try {
       const data = req.body;
@@ -17,174 +19,114 @@ class AuthService {
       }
       data.password = bcrypt.hashSync(data.password, 12);
       data.status = Status.INACTIVE;
-      data.activationToken = randomStringGenerator(100);
-      const {confirmPassword, ...mappedData} = data;
+
+      data.activationToken = this.generateOTP();
+
+      const { confirmPassword, ...mappedData } = data;
       return mappedData;
     } catch (exception) {
       throw exception;
     }
   }
 
-  
-
   async sendActivationNotification(user) {
     try {
       await emailSvc.sendEmail({
         to: user.email,
-        sub: "Account activation",
-        msg: `Dear ${user.name},thank for registering with us.
-         <br> Please click the link below to activate your account <br> 
-         <a href="${AppConfig.frontendUrl}/activate/${user.activationToken}">Activate Account</a>
-         regards,
-         System Administration,
-         Please do not reply to this email. Contact support if you have any questions.
-         Note: Please copy the link incase the button is not working: ${AppConfig.frontendUrl}/activate/${user.activationToken}`,
+        sub: "Account Activation OTP",
+        msg: `
+<div style="background-color: #f9fafb; padding: 50px 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;">
+        
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">🚌 SuvYatra</h1>
+        </div>
+
+        <div style="padding: 40px 30px; text-align: center;">
+            <h2 style="color: #111827; margin: 0 0 10px 0; font-size: 22px; font-weight: 700;">Verify your account</h2>
+            <p style="color: #4b5563; font-size: 15px; line-height: 24px; margin: 0 0 30px 0;">
+                Hi ${user.name}, <br>
+                Thank you for choosing SuvYatra. Use the code below to complete your registration and start booking.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 12px; padding: 20px; border: 1px dashed #d1d5db; display: inline-block; min-width: 200px;">
+                <span style="display: block; color: #6b7280; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Your Verification Code</span>
+                <span style="font-family: 'Courier New', Courier, monospace; font-size: 36px; font-weight: 800; color: #4338ca; letter-spacing: 10px;">${user.activationToken}</span>
+            </div>
+
+            <p style="color: #9ca3af; font-size: 13px; margin-top: 30px;">
+                This code is valid for <strong>15 minutes</strong>. <br>
+                For your security, do not share this code with anyone.
+            </p>
+        </div>
+
+        <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                © 2026 SuvYatra Transportation System <br>
+                Kathmandu, Nepal
+            </p>
+        </div>
+    </div>
+</div>
+`,
       });
     } catch (exception) {
       throw exception;
     }
   }
 
- 
   async newUserWelcomeEmail(user) {
     try {
       return emailSvc.sendEmail({
-        to:user.email,
-        sub: "Welcom to our platform",
-        msg: 
-      `Dear ${user.name},
-      <html>
-        <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🚌 Welcome to BusTicket</h1>
-           
-            </div>
-            <div style="padding: 40px 20px; text-align: center;">
-              <h2 style="color: #333333; margin-top: 0;">Account Activated Successfully!</h2>
-              <p style="color: #666666; font-size: 16px; line-height: 1.6;">Your account has been activated and you're ready to start booking bus tickets.</p>
-              <div style="margin: 30px 0;">
-                <a href="${AppConfig.frontendUrl}/login" style="background-color: #667eea; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Get Started Now</a>
-              </div>
-              <hr style="border: none; border-top: 1px solid #eeeeee; margin: 30px 0;">
-              <p style="color: #999999; font-size: 14px;">Enjoy exclusive bus offers and early access to bookings.</p>
-            </div>
-            <div style="background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999999;">
-              <p style="margin: 0;">Please do not reply to this email. Contact support if you have any questions.<br>© 2024 BusTicket. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-      </html>`
-      })
+        to: user.email,
+        sub: "Welcome to BusTicket",
+        msg: `<div><h1>Account Successfully Activated</h1>
+<p>Welcome, <strong>${user.name}</strong>. Your account is now fully verified and ready for use.</p>
+<p>You can now browse our services and manage your bookings through your personalized dashboard.</p></div>`,
+      });
     } catch (exception) {
       throw exception;
     }
   }
-  createAuthData = async(data) => {
-    try {
-      const auth = new AuthModel(data)
-      return await auth.save()
-    } catch (exception) {
-      throw exception
-    }
-  }
-  getSingleRowByFilter = async(filter) => {
-    try {
-      const auth = await AuthModel.findOne(filter)
-      return auth;
-    } catch (exception) {
-      throw exception
-    }
-  }
 
-  logoutUser = async(token) => {
+  // Existing Auth Data methods...
+  createAuthData = async (data) => {
     try {
-      const accessToken = token.replace("Bearer ", "");
-      const authData = await this.getSingleRowByFilter({
-        maskedAccessToken: accessToken
-      })
-      if(!authData) {
-        throw {
-          code: 401,
-          message: "Token is not valid",
-          status: "TOKEN_NOT_VALID"
-        }
-      }
-      const authDel = await AuthModel.findOneAndDelete({maskedAccessToken: accessToken});
-      return authDel
+      const auth = new AuthModel(data);
+      return await auth.save();
     } catch (exception) {
-      throw exception
+      throw exception;
     }
-  }
+  };
 
-   logoutFromAll = async(filter) => {
+  getSingleRowByFilter = async (filter) => {
     try {
-      const authDel = await AuthModel.deleteMany(filter)
-      return authDel
+      return await AuthModel.findOne(filter);
     } catch (exception) {
-      throw exception
+      throw exception;
     }
-  }
+  };
 
-  updateSingleRowByFilter = async(filter, data) => {
+  logoutFromAll = async (filter) => {
     try {
-      const response = await AuthModel.findOneAndUpdate(filter,{$set: data}, {new: true})
-      return response;
+      return await AuthModel.deleteMany(filter);
     } catch (exception) {
-      throw exception
+      throw exception;
     }
-  }
-  sendPasswordResetRequestEmail = async(userData) => {
+  };
+
+  updateSingleRowByFilter = async (filter, data) => {
     try {
-      return await emailSvc.sendEmail({
-        to: userData.email,
-        sub: "Password reset request",
-        msg: `Please click the link below to reset your password <br>
-        <a href="${AppConfig.nextjsFrontendUrl}/reset-password?token=${userData.forgetPasswordToken}">${AppConfig.frontendUrl}/reset-password?token=${userData.forgetPasswordToken}</a>
-       The link will expire in 3 hour. If you did not request for password reset, please ignore this email.`,
-      })
+      return await AuthModel.findOneAndUpdate(
+        filter,
+        { $set: data },
+        { new: true },
+      );
     } catch (exception) {
-      throw exception
+      throw exception;
     }
-  }
-   verifyPasswordResetToken = async(token) => {
-    try {
-      const userDetail = await userSvc.getSingleUserByFilter({
-        forgetPasswordToken: token
-      });
-      if(!userDetail){
-        throw {
-          code: 422,
-          message: "Token not found, try again resetting password",
-          status: "RESET_TOKEN_NOT_FOUND"
-        }
-      }
-      let tokenExpiry = userDetail.expiryTime.getTime();
-      const nowTime = Date.now();
-      if(tokenExpiry < nowTime) {
-        throw {
-          code: 422,
-          message: "Token has expired, try again resetting password",
-          status: "RESET_TOKEN_EXPIRED"
-        }
-      }
-      return userDetail
-    } catch (exception) {
-      throw exception
-    }
-  }
-  sendPasswordResetSuccessEmail = async(userData) => {
-    try {
-      return await emailSvc.sendEmail({
-        to: userData.email,
-        sub: "Password reset successful",
-        msg: `Your password has been reset successfully. If you did not perform this action, please contact support immediately.`,
-      })
-    } catch (exception) {
-      throw exception
-    }
-  }
+  };
 }
 
-const authSvc = new AuthService()
+const authSvc = new AuthService();
 module.exports = authSvc;

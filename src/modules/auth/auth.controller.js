@@ -35,41 +35,47 @@ class AuthController {
     }
   };
 
-  activateUser = async (req, res, next) => {
-    try {
-      const token = req.params.token;
-      const userDetail = await userSvc.getSingleUserByFilter({
-        activationToken: token,
-      });
+ // auth.controller.js
 
-      if (!userDetail) {
-        throw {
-          code: 404,
-          message:
-            "user associated token not found or has been already activated.",
-          status: "NOT_FOUND",
-        };
-      }
-      const updatedUser = await userSvc.updateSingleUserByFilter(
-        {
-          _id: userDetail._id,
-        },
-        {
-          status: Status.ACTIVE,
-          activationToken: null,
-        },
-      );
-      await authSvc.newUserWelcomeEmail(updatedUser);
-      res.json({
-        data: null,
-        message: "Account activated successfully. You can now login.",
-        status: "ACTIVATED SUCCESSFULLY",
-        options: null,
-      });
+activateUser = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            throw { code: 400, message: "Email and OTP are required." };
+        }
+        const userDetail = await userSvc.getSingleUserByFilter({
+            email: email,
+            activationToken: otp,
+        });
+
+        if (!userDetail) {
+            throw {
+                code: 422,
+                message: "Invalid OTP or Email. Please try again.",
+                status: "VALIDATION_FAILED",
+            };
+        }
+
+        const updatedUser = await userSvc.updateSingleUserByFilter(
+            { _id: userDetail._id },
+            {
+                status: Status.ACTIVE,
+                activationToken: null, 
+            }
+        );
+
+        await authSvc.newUserWelcomeEmail(updatedUser);
+
+        res.json({
+            data: null,
+            message: "Account activated successfully.",
+            status: "ACTIVATED_SUCCESSFULLY",
+        });
     } catch (exception) {
-      next(exception);
+        next(exception);
     }
-  };
+};
 
   loginUser = async (req, res, next) => {
     try {
@@ -330,10 +336,10 @@ class AuthController {
         const userId = req.loggedInUser._id;
         const { oldPassword, newPassword } = req.body;
 
-        // 1. Fetch user to get the current hashed password
+      
         const userDetail = await userSvc.getSingleUserByFilter({ _id: userId });
 
-        // 2. Verify Old Password
+     
         if (!bcrypt.compareSync(oldPassword, userDetail.password)) {
             throw {
                 code: 400,
@@ -342,16 +348,15 @@ class AuthController {
             };
         }
 
-        // 3. Hash New Password
+      
         const newHashedPassword = bcrypt.hashSync(newPassword, 12);
 
-        // 4. Update in Database
+     
         await userSvc.updateSingleUserByFilter(
             { _id: userId },
             { password: newHashedPassword }
         );
 
-        // 5. Invalidate all existing sessions (Logout from all)
         await authSvc.logoutFromAll({
             user: userId,
         });
@@ -399,7 +404,6 @@ class AuthController {
 
   getAllUsers = async (req, res) => {
     try {
-      // Run both counts in parallel for maximum speed
       const users = await UserModel.find({
         role: { $in: ["driver", "passenger"] },
       })

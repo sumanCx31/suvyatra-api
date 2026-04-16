@@ -40,7 +40,7 @@ class EmailService {
         to: to,
         from: SMTPConfig.from,
         subject: sub,
-        text: msg,
+        html: msg,
       };
       if (cc) {
         msgBody["cc"] = cc;

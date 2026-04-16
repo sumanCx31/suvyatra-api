@@ -9,7 +9,7 @@ const { RegisterDTO, ResetPasswordRequestDTO, ResetPasswordDataDTO, ChangePasswo
 const authCtrl = new AuthController()
 
 authRouter.post("/register",uploader().single('image'),bodyValidator(RegisterDTO),authCtrl.registerUser)
-authRouter.get("/activate/:token",authCtrl.activateUser )
+authRouter.post("/activate",authCtrl.activateUser );
 authRouter.post("/login", authCtrl.loginUser)
 authRouter.get("/me",auth(), authCtrl.loggedInUserProfile)
 authRouter.get("/logout",auth(USER_ROLES.ADMIN || USER_ROLES.DRIVER), authCtrl.logoutUser)
