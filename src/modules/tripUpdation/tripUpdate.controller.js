@@ -33,7 +33,7 @@ class TripController {
       const data = req.body;
       const updatedTrip = await TripSvc.updatedTripById(id, data);
 
-      // Calculate remaining seats
+      
       const bookedSeats = updatedTrip.seats.filter(
         (seat) => seat.isBooked,
       ).length;
