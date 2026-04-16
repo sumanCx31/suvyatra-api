@@ -52,17 +52,16 @@ class OrderService {
       paymentStatus: "pending",
     });
 
-    // ✅ 🔹 Populate before returning
+ 
     const populatedOrder = await OrderModel.findById(order._id)
       .populate("user", "name email phone image")
       .populate("trip", "from to date departureTime arrivalTime");
 
-    // 🔹 Set expiration timer (10 minutes)
     setTimeout(async () => {
       try {
         const expiredOrder = await OrderModel.findById(order._id);
         if (expiredOrder && expiredOrder.paymentStatus === "pending") {
-          // Mark order as cancelled
+         
           expiredOrder.bookingStatus = "cancelled";
           await expiredOrder.save();
           console.log(`Order ${order._id} expired: seats released`);
@@ -70,7 +69,7 @@ class OrderService {
       } catch (err) {
         console.error("Error expiring order:", err);
       }
-    }, 10 * 60 * 1000); // 10 minutes in milliseconds
+    }, 10 * 60 * 1000); 
 
     return populatedOrder;
   } catch (exception) {

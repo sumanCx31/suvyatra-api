@@ -1,3 +1,4 @@
+// const { Resend } = require("resend");
 const { Resend } = require("resend");
 const { SMTPConfig } = require("../config/config");
 
@@ -8,14 +9,9 @@ class EmailService {
     try {
       const apiKey = process.env.RESEND_API_KEY || SMTPConfig.resendApiKey ;
 
-      if (!apiKey || apiKey === "undefined") {
-        console.error("CRITICAL: Resend API Key is missing!");
-      }
-
       this.#resend = new Resend(apiKey);
       console.log("Resend Email Service initialized...");
     } catch (exception) {
-      console.error("Initialization Error:", exception);
       throw {
         message: "Resend initialization failed",
         status: "RESEND_INIT_ERROR",
