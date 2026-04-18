@@ -19,6 +19,7 @@ authRouter.get("/forget-password-verify/:token", authCtrl.forgetPasswordTokenVer
 authRouter.put("/reset-password",bodyValidator(ResetPasswordDataDTO),authCtrl.resetPassword);
 authRouter.put("/change-password",auth(),bodyValidator(ChangePasswordDTO),authCtrl.changePassword);
 authRouter.get("/user",authCtrl.getAllUsers);
+authRouter.get("/user-detail/:_id",auth(USER_ROLES.ADMIN),authCtrl.getUserDetail)
 
 
 authRouter.put("/user/:id",authCtrl.updateUserById)

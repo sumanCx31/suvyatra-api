@@ -37,7 +37,7 @@ class OrderService {
     if (conflictingSeats.length > 0) {
       throw {
         status: 400,
-        message: `Seats already booked: ${conflictingSeats.join(", ")}`,
+        message: `Seats already reserved: ${conflictingSeats.join(", ")}`,
       };
     }
 

@@ -402,6 +402,20 @@ activateUser = async (req, res, next) => {
     });
   };
 
+  getUserDetail =  async(req,res)=>{
+    try {
+      const _id = req.params._id;
+      const detail = await UserModel.find({_id});
+      res.json({
+        data:detail,
+        message:"user detail fetched sucessfully!!",
+        status:"USER_DETAIL_FETCHED"
+      })
+    } catch (exception) {
+      throw exception;
+    }
+  }
+
   getAllUsers = async (req, res) => {
     try {
       const users = await UserModel.find({
