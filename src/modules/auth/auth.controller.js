@@ -10,14 +10,14 @@ const jwt = require("jsonwebtoken");
 class AuthController {
   registerUser = async (req, res, next) => {
     try {
-      const {role} = req.body;
-      if(role && role === "admin") {
-        throw {
-          code: 403,
-          message: "Admin registration is not allowed.",
-          status: "ADMIN_REGISTRATION_FORBIDDEN",
-        };
-      }
+      // const {role} = req.body;
+      // if(role && role === "admin") {
+      //   throw {
+      //     code: 403,
+      //     message: "Admin registration is not allowed.",
+      //     status: "ADMIN_REGISTRATION_FORBIDDEN",
+      //   };
+      // }
       const data = await authSvc.transformUserCreate(req);
       let user = await userSvc.createUser(data);
 
