@@ -475,17 +475,16 @@ class OrderController {
       const pidx = req.params._id;
 
       const orderDetail = await OrderModel.find({ pidx })
-        .select("trip user seats") // only required fields from Order
+        .select("trip user seats") 
         .populate({
           path: "trip",
-          select: "from to date seats", // only trip name
+          select: "from to date seats", 
         })
         .populate({
           path: "user",
-          select: "name", // only user name
+          select: "name",
         });
 
-      // Optional: format response (clean structure)
       const formatted = orderDetail.map((order) => ({
         from: order.trip?.from,
         to: order.trip?.to,
