@@ -1,3 +1,4 @@
+const { USER_ROLES } = require('../../config/constants');
 const auth = require('../../middlewares/auth.middleware');
 const bodyValidator = require('../../middlewares/request-validate.middleware');
 const uploader = require('../../middlewares/uploader.middleware');
@@ -9,6 +10,7 @@ const busRouter = require('express').Router();
 busRouter.post("/",uploader().single("image"),bodyValidator(BusValidatorDTO),BusCltr.Create);
 busRouter.get("/",BusCltr.getAllBus);
 busRouter.get("/:id",BusCltr.getBusById);
+busRouter.put("/:_id",auth(USER_ROLES.ADMIN),uploader().single("image"),BusCltr.updateBus)
 busRouter.delete("/:id",BusCltr.deleteBusById);
 
 

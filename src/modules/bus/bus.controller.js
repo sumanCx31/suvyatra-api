@@ -64,6 +64,24 @@ class BusController {
     }
   };
 
+
+
+updateBus = async (req, res) => {
+  try {
+    const updatedBus = await BusModel.findByIdAndUpdate(
+      req.params._id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    res.json(updatedBus);
+
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+
   deleteBusById = async(req,res)=>{
     try {
         let id = req.params.id;
