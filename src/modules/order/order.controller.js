@@ -513,7 +513,7 @@ class OrderController {
         user: userId,
         paymentStatus: "paid",
       })
-        .select("trip seats totalAmount bookingStatus user paymentMethod")
+        .select("trip seats totalAmount bookingStatus user paymentMethod createdAt")
         .populate({
           path: "trip",
           select: "from to date",
@@ -522,6 +522,8 @@ class OrderController {
           path: "user",
           select: "name email",
         });
+        console.log("hello:",orders);
+        
       res.json({
         data: orders,
         message: "Tickets retrieved successfully",
