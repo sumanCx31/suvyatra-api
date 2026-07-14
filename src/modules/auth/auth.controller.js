@@ -139,7 +139,7 @@ activateUser = async (req, res, next) => {
         maskedRefreshToken: maskedRefreshToken,
       };
       await authSvc.createAuthData(authData);
-      console.log("Login success");
+      // console.log("Login success");
 
       res.json({
         data: {
